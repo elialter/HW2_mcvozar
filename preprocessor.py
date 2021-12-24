@@ -104,7 +104,15 @@ class Worker(multiprocessing.Process):
         ------
         An numpy array of same shape
         '''
-        raise NotImplementedError("To be implemented")
+        n_image = np.reshape(image, (28, 28))
+        for i in range(n_image.shape[0]):
+            for j in range(n_image.shape[1]):
+                if (n_image[i][j] + noise) < 0:
+                    n_image[i][j] = 0
+                # TODO - check if the pixel value is to high
+                n_image[i][j] += noise
+        return np.reshape(n_image, 784)
+#        raise NotImplementedError("To be implemented")
 
     @staticmethod
     def skew(image, tilt):
