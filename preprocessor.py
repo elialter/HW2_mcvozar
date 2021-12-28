@@ -109,8 +109,10 @@ class Worker(multiprocessing.Process):
             for j in range(n_image.shape[1]):
                 if (n_image[i][j] + noise) < 0:
                     n_image[i][j] = 0
-                # TODO - check if the pixel value is to high
-                n_image[i][j] += noise
+                elif (n_image[i][j] + noise) > 1:
+                    n_image[i][j] = 1
+                else:
+                    n_image[i][j] += noise
         return np.reshape(n_image, 784)
 #        raise NotImplementedError("To be implemented")
 
