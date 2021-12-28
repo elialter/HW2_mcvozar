@@ -1,10 +1,13 @@
+from multiprocessing import lock, pipe
+
 
 class MyQueue(object):
 
     def __init__(self):
         ''' Initialize MyQueue and it's members.
         '''
-        raise NotImplementedError("To be implemented")
+        self.reading_pipe, self.writing_pipe = Pipe()
+        self.my_lock = Lock()
 
     def put(self, msg):
         '''Put the given message in queue.
@@ -14,7 +17,9 @@ class MyQueue(object):
         msg : object
             the message to put.
         '''
-        raise NotImplementedError("To be implemented")
+        self.my_lock.acquire()
+        self.writing_pipe.send(msg)
+        self.my_lock.release()
 
     def get(self):
         '''Get the next message from queue (FIFO)
@@ -23,5 +28,5 @@ class MyQueue(object):
         ------
         An object
         '''
-        raise NotImplementedError("To be implemented")
+        return self.reading_pipe.recv()
 
