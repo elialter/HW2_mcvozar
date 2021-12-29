@@ -87,9 +87,9 @@ def corr_comparison():
 
 
 if __name__ == '__main__':
-    os.environ['NUMBAPRO_NVVM'] = '/usr/local/cuda-9.0/nvvm/lib64/libnvvm.so'
-    os.environ['NUMBAPRO_LIBDEVICE'] = '/usr/local/cuda-9.0/nvvm/libdevice/'
-    corr_comparison()
+    #os.environ['NUMBAPRO_NVVM'] = '/usr/local/cuda-9.0/nvvm/lib64/libnvvm.so'
+    #os.environ['NUMBAPRO_LIBDEVICE'] = '/usr/local/cuda-9.0/nvvm/libdevice/'
+    #corr_comparison()
 
     res = sobel_operator()
     show_image(res)

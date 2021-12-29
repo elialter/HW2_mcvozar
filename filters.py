@@ -128,8 +128,8 @@ def sobel_operator():
     pic = load_image()
     # your calculations
     filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-    # filter = np.array([[1, 0, 0, 0, -1], [2, 0, 0, 0, -2], [1, 0, 0, 0, -1], [2, 0, 0, 0, -2], [1, 0, 0, 0, -1]])
-    # filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1], [2, 0, -2], [1, 0, -1]])
+    #filter = np.array([[1, 0, 0, 0, -1], [2, 0, 0, 0, -2], [1, 0, 0, 0, -1], [2, 0, 0, 0, -2], [1, 0, 0, 0, -1]])
+    #filter = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1], [2, 0, -2], [1, 0, -1]])
     G_x = correlation_numba(filter, pic)
     G_y = correlation_numba(np.transpose(filter), pic)
     image_sobel = np.empty_like(pic)
