@@ -4,14 +4,15 @@ import my_queue
 import preprocessor
 import os
 
+
 class IPNeuralNetwork(NeuralNetwork):
-    
+
     def fit(self, training_data, validation_data=None):
         '''
         Override this function to create and destroy workers
         '''
         # 1. Create Workers
-		# (Call Worker() with self.mini_batch_size as the batch_size)
+        # (Call Worker() with self.mini_batch_size as the batch_size)
         num_workers = (int)(os.environ['SLURM_CPUS_PER_TASK'])
         jobs = multiprocessing.JoinableQueue()
         self.results = my_queue.MyQueue()
@@ -34,10 +35,8 @@ class IPNeuralNetwork(NeuralNetwork):
         # 3. Stop Workers
         jobs.join()
 
-#        raise NotImplementedError("To be implemented")
-        
-        
-    
+    #        raise NotImplementedError("To be implemented")
+
     def create_batches(self, data, labels, batch_size):
         '''
         Override this function to return self.number_of_batches batches created by workers
@@ -50,6 +49,6 @@ class IPNeuralNetwork(NeuralNetwork):
         return batches
 #        raise NotImplementedError("To be implemented")
 
-    
+
 
 

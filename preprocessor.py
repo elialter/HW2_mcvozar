@@ -5,8 +5,9 @@ from scipy.ndimage import rotate
 
 max_noise = 0.2
 
+
 class Worker(multiprocessing.Process):
-    
+
     def __init__(self, jobs, result, training_data, batch_size):
         super().__init__()
 
@@ -26,10 +27,11 @@ class Worker(multiprocessing.Process):
 			A tuple of (training images array, image lables array)
 		batch_size:
 			workers batch size of images (mini batch size)
-        
+
         You should add parameters if you think you need to.
         '''
-#        raise NotImplementedError("To be implemented")
+
+    #        raise NotImplementedError("To be implemented")
 
     @staticmethod
     def rotate(image, angle):
@@ -41,7 +43,7 @@ class Worker(multiprocessing.Process):
             An array of size 784 of pixels
         angle : int
             The angle to rotate the image
-            
+
         Return
         ------
         An numpy array of same shape
@@ -49,7 +51,8 @@ class Worker(multiprocessing.Process):
         processed_image = np.reshape(image, (28, 28))
         rotate(processed_image, angle, (1, 0), False)
         return np.reshape(processed_image, 784)
-#        raise NotImplementedError("To be implemented")
+
+    #        raise NotImplementedError("To be implemented")
 
     @staticmethod
     def shift(image, dx, dy):
@@ -63,7 +66,7 @@ class Worker(multiprocessing.Process):
             The number of pixels to move in the x-axis
         dy : int
             The number of pixels to move in the y-axis
-            
+
         Return
         ------
         An numpy array of same shape
@@ -85,13 +88,14 @@ class Worker(multiprocessing.Process):
             shifted_image[dy:, :] = 0
 
         return np.reshape(shifted_image, 784)
-#        raise NotImplementedError("To be implemented")
-    
+
+    #        raise NotImplementedError("To be implemented")
+
     @staticmethod
     def add_noise(image, noise):
         '''Add noise to the image
-        for each pixel a value is selected uniformly from the 
-        range [-noise, noise] and added to it. 
+        for each pixel a value is selected uniformly from the
+        range [-noise, noise] and added to it.
 
         Parameters
         ----------
@@ -107,14 +111,16 @@ class Worker(multiprocessing.Process):
         n_image = np.reshape(image, (28, 28))
         for i in range(n_image.shape[0]):
             for j in range(n_image.shape[1]):
-                if (n_image[i][j] + noise) < 0:
+                current_noise = random.uniform(-noise, noise)
+                if (n_image[i][j] + current_noise) < 0:
                     n_image[i][j] = 0
-                elif (n_image[i][j] + noise) > 1:
+                elif (n_image[i][j] + current_noise) > 1:
                     n_image[i][j] = 1
                 else:
-                    n_image[i][j] += noise
+                    n_image[i][j] += current_noise
         return np.reshape(n_image, 784)
-#        raise NotImplementedError("To be implemented")
+
+    #        raise NotImplementedError("To be implemented")
 
     @staticmethod
     def skew(image, tilt):
@@ -131,7 +137,7 @@ class Worker(multiprocessing.Process):
         ------
         An numpy array of same shape
         '''
-        n_image = np.reshape(image,(28,28))
+        n_image = np.reshape(image, (28, 28))
         n_pixels = np.empty_like(n_image)
         for i in range(n_image.shape[0]):
             for j in range(n_image.shape[1]):
@@ -141,7 +147,8 @@ class Worker(multiprocessing.Process):
                     temp = (int)(np.floor(j + i * tilt))
                     n_pixels[i, j] = np.copy(n_image[i, temp])
         return np.reshape(n_pixels, 784)
-#        raise NotImplementedError("To be implemented")
+
+    #        raise NotImplementedError("To be implemented")
 
     def process_image(self, image):
         '''Apply the image process functions
@@ -158,11 +165,10 @@ class Worker(multiprocessing.Process):
         '''
         processed_image = np.copy(image)
 
-        for i in range(0,4):
+        for i in range(0, 4):
             augement_function = random.randint(0, 3)
             if augement_function == 0:
-                processed_image = Worker.add_noise(processed_image,
-                                                   random.uniform(-max_noise, max_noise))
+                processed_image = Worker.add_noise(processed_image, 0.2)
             if augement_function == 1:
                 processed_image = Worker.shift(processed_image,
                                                random.randint(-2, 2), random.randint(-2, 2))
@@ -173,7 +179,7 @@ class Worker(multiprocessing.Process):
 
         return processed_image
 
-#        raise NotImplementedError("To be implemented")
+    #        raise NotImplementedError("To be implemented")
 
     def run(self):
         '''Process images from the jobs queue and add the result to the result queue.
@@ -186,7 +192,7 @@ class Worker(multiprocessing.Process):
                 self.jobs.task_done()
                 break
             indexes = random.sample(range(0, len(self.training_data[0])), self.batch_size)
-            images=[self.process_image(self.training_data[0][i]) for i in indexes]
+            images = [self.process_image(self.training_data[0][i]) for i in indexes]
             t_t = np.array(images), self.training_data[1][indexes]
             self.result.put(t_t)
             self.jobs.task_done()

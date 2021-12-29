@@ -1,4 +1,4 @@
-from multiprocessing import lock, pipe
+from multiprocessing import Lock, Pipe
 
 
 class MyQueue(object):
@@ -23,7 +23,7 @@ class MyQueue(object):
 
     def get(self):
         '''Get the next message from queue (FIFO)
-            
+
         Return
         ------
         An object

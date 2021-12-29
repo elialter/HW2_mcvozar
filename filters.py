@@ -3,12 +3,11 @@ from numba import njit
 import imageio
 import matplotlib.pyplot as plt
 import os
-import numby as np
-from numba import float64
+import numpy as np
 
 
 @cuda.jit
-def matmul_kernel(image, kernel, needed_result):
+def image_correlation_kernel(image, kernel, res):
     x = cuda.threadIdx.x
 
     # the number of rows and cols in half kernel
@@ -22,28 +21,27 @@ def matmul_kernel(image, kernel, needed_result):
         # defining where rows and cols start and end in the kernel in the due to current cell place
         starting_row = 0
         last_row = kernel.shape[0]
-        start_column = 0
+        starting_column = 0
         last_column = kernel.shape[1]
         # check if extension from bounds exists for rows
         if image_current_row - kernel_max_rows < 0:
             starting_row = kernel_max_rows - image_current_row
         if image_current_row + kernel_max_rows >= image.shape[0]:
             last_row = kernel.shape[0] - (image_current_row + kernel_max_rows - (image.shape[0] - 1))
-        # check if extension from bounds exists for cols
+        # check if extension from bounds exists for columns
         if image_current_col - kernel_max_cols < 0:
-            start_column = kernel_max_cols - image_current_col
+            starting_column = kernel_max_cols - image_current_col
         if image_current_col + kernel_max_cols >= image.shape[1]:
             last_column = kernel.shape[1] - (image_current_col + kernel_max_cols - (image.shape[1] - 1))
 
         # evaluate the correlation of the current pixel
         pixel_correlation = 0.0
         for i in prange(starting_row, last_row):
-            for j in pragne(start_column, last_column):
-                original_image_pixel = image[image_current_row - kernel_max_rows + i, col - kernel_max_cols + j]
-                pixel_correlation += original_image_pixel * kernel[i, j]
+            for j in prange(starting_column, last_column):
+                pixel_correlation += image[image_current_row - ((kernel_max_rows) - i), image_current_col - ((kernel_max_cols) - j)] * kernel[i, j]
 
         # save the correlation in the returned result array
-        cuda.atomic.add(needed_result[image_current_row], image_current_col, pixel_correlation)
+        cuda.atomic.add(res[image_current_row], image_current_col, pixel_correlation)
     cuda.syncthreads()
 
 
@@ -69,9 +67,7 @@ def correlation_gpu(kernel, image):
 
     # getting the correlation needed using gpu
     image_correlation_kernel[1, 1024](gpu_image, gpu_kernel, gpu_correlated_image)
-
     return gpu_correlated_image.copy_to_host(correlated_image)
-
 
 @njit
 def correlation_numba(kernel, image):
@@ -98,22 +94,23 @@ def correlation_numba(kernel, image):
             # defining where rows and cols start and end in the kernel in the due to current cell place
             starting_row = 0
             last_row = kernel.shape[0]
-            start_column = 0
+            starting_column = 0
             last_column = kernel.shape[1]
-
             # check if extension from bounds exists for rows
             if kernel_max_rows - image_row > 0:
                 starting_row = kernel_max_rows - image_row
             if image_row + kernel_max_rows >= image.shape[0]:
                 last_row = kernel.shape[0] - (image_row + kernel_max_rows - (image.shape[0] - 1))
+            # check if extension from bounds exists for cols
             if kernel_max_cols - image_col > 0:
-                start_column = kernel_max_cols - image_col
+                starting_column = kernel_max_cols - image_col
             if image_col + kernel_max_cols >= image.shape[1]:
                 last_column = kernel.shape[1] - (image_col + kernel_max_cols - (image.shape[1] - 1))
 
+            # evaluate the correlation of the current pixel
             pixel_correlation = 0.0
             for i in prange(starting_row, last_row):
-                for j in prange(start_column, last_column):
+                for j in prange(starting_column, last_column):
                     original_image_pixel = image[image_row - kernel_max_rows + i, image_col - kernel_max_cols + j]
                     pixel_correlation += original_image_pixel * kernel[i, j]
             correlated_image[image_row, image_col] = pixel_correlation
